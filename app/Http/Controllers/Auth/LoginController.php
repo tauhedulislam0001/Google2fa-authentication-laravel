@@ -56,32 +56,24 @@ class LoginController extends Controller
                 return redirect('/verify-2fa');
             }
 
-            return redirect()->intended('/home');
-            // $google2fa = app('pragmarx.google2fa');
+            // return redirect()->intended('/home');
+            $google2fa = app('pragmarx.google2fa');
 
-            // // Save the registration data in an array
-            // $user = User::findOrFail(Auth::user()->id);
-            // // Add the secret key to the registration data
-            // $secret = $google2fa->generateSecretKey();
-            // $user->update(['google2fa_secret' => $secret]);
+            // Save the registration data in an array
+            $user = User::findOrFail(Auth::user()->id);
+            // Add the secret key to the registration data
+            $secret = $google2fa->generateSecretKey();
+            $user->update(['google2fa_secret' => $secret]);
 
-            // // Save the registration data to the user session for just the next request
+            // Save the registration data to the user session for just the next request
 
-            // // Generate the QR image. This is the image the user will scan with their app
-            // // to set up two factor authentication
-            // $QR_Image = $google2fa->getQRCodeInline(
-            //     config('app.name'),
-            //     $user->email,
-            //     $user->google2fa_secret
-            // );
+            session()->forget('2fa:user:id');
+            session()->forget('google2fa_secret');
+            session()->put('2fa:user:id', Auth::id());
+            session()->put('google2fa_secret',Auth::user()->google2fa_secret);
+            Auth::logout();
 
-            // session()->forget('2fa:user:id');
-            // session()->forget('google2fa_secret');
-            // session()->put('2fa:user:id', Auth::id());
-            // session()->put('google2fa_secret',Auth::user()->google2fa_secret);
-            // Auth::logout();
-
-            // return redirect('/verify-2fa');
+            return redirect('/verify-2fa');
         }
         return back()->withErrors(['error' => 'Invalid credentials']);
     }
